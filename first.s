@@ -39,5 +39,5 @@ _start:
 	syscall			/*вызваем прерывание*/
 
 	mov	$60,	%rax	/*номер системного вызова exit*/
-	mov	$0,	%rsi	/*0-без ошибок; коды ошибок /usr/include/asm-generic/errno-base.h*/
+	mov	$0,	%rdi	/*0-без ошибок; коды ошибок /usr/include/asm-generic/errno-base.h*/
 	syscall			/*к сожалению не смогла добится вызова getrandom без ошибки*/
