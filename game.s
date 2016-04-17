@@ -1,12 +1,12 @@
-.section .bss
-	.comm buff, 1
 .section .data
-#buff:	.byte	1
+wellco: .ascii	"Wellcome to the GAME stone-scissors-paper\n" 
+prompt:	.ascii	"Enter one of three sample digits\n1-stone\n2-scissors\n3-paper\n"
+buff:	.quad	0x0
 repr1:	.quad	0x55
-repr2:	.quad	0xAA
-flag_m:	.byte	0
-flag_u:	.byte	0
-game:	.ascii	"00000000_VS_00000000\n"
+repr2:	.quad	0xaa
+flag_m:	.quad	0x0
+flag_u:	.quad	0x0
+game:	.ascii	"00000000 VS 00000000\n"
 verdict: .ascii	"00000000\n"
 win:	.ascii	"You won!!!\n"
 lose:	.ascii	"You loose\n"
@@ -46,68 +46,71 @@ _start:
 	cmp	repr2,	%r8
 	cmovg	%rax,	%rbx
 	mov	%rbx,	flag_m
-
+scan:
 	xor	%rax,	%rax
 	xor	%rdi,	%rdi
 	mov	$buff,	%rsi
 	inc	%rdx
 	syscall
+
 	mov	buff,	%r9
 	sub	$0x31,	%r9
 	mov	%r9,	flag_u
 _compare:
-	mov	$game,	%r10
-	cmp	%rdx,	%r9	/*rdx имеет 1*/
+	mov	$game,	%rdx
+	cmp	%rax,	%r9	/*rax имеет 1*/
 	je	one_u
 	jg	two_u
 zero_u:
-	mov	stone,	%r11
-	mov	%r11,	(%r10)
+	mov	stone,	%rbx
+	mov	%rbx,	(%rdx)
 	jmp	next
 one_u:
-	mov	scissors,%r11
-	mov	%r11,	(%r10)
+	mov	scissors,%rbx
+	mov	%rbx,	(%rdx)
 	jmp	next
 two_u:
-	mov	paper,	%r11
-	mov	%r11,	(%r10)
+	mov	paper,	%rbx
+	mov	%rbx,	(%rdx)
 next:
-	cmp	%rdx,	flag_m
+	cmp	%rax,	flag_m
 	je	one_m
 	jg	two_m
 zero_m:
-	mov	stone,	%r11
-	mov	%r11,	12(%r10)
+	mov	stone,	%rbx
+	mov	%rbx,	12(%rdx)
 	jmp	forward
 one_m:
-	mov	scissors,%r11
-	mov	%r11,	12(%r10)
+	mov	scissors,%rbx
+	mov	%rbx,	12(%rdx)
 	jmp	forward
 two_m:
-	mov	paper,	%r11
-	mov	%r11,	12(%r10)
+	mov	paper,	%rbx
+	mov	%rbx,	12(%rdx)
 forward:
-	mov	flag_m,	%r10
-	mov	flag_u,	%r11
-	mov	$2,	%r12
-	cmp	%r10,	%r11
+	mov	flag_m,	%r8
+	inc	%rax
+	cmp	%r8,	%r9
 	je	drawing
-	add	%r10,	%r11
-	cmp	%r11,	%r12
-	jl	wining
-	jg	losing
+	add	%r8,	%r9
+	cmp	%r9,	%rax
+	jne	vyhlop
 
-	cmp	%r11,	%r12
+	cmp	%r8,	flag_u
 	jl	losing
 	jg	wining
+vyhlop:
+	cmp	%r8,	flag_u
+	jl	wining
+	jg	losing
 wining:
-	write	$win,	$10
+	write	$win,	$11
 	jmp	_exit
 losing:
 	write	$lose,	$10
 	jmp	_exit
 drawing:
-	write	$draw,	$10
+	write	$draw,	$11
 
 _exit:
 	write	$game,	$21
