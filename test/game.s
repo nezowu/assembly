@@ -1,15 +1,16 @@
 .section .data
 wellco: .ascii	"Wellcome to the GAME stone-scissors-paper\n" 
+	we_len = . - wellco
 prompt:	.ascii	"Enter one of three sample digits\n1-stone\n2-scissors\n3-paper\n"
+	pr_len = . - prompt
 buff:	.quad	0x0
 repr1:	.quad	0x55
 repr2:	.quad	0xaa
 flag_m:	.quad	0x0
 flag_u:	.quad	0x0
-game:	.ascii	"00000000 VS 00000000\n"
-verdict: .ascii	"00000000\n"
+game:	.ascii	"00000000_VS_00000000\n"
 win:	.ascii	"You won!!!\n"
-lose:	.ascii	"You loose\n"
+lose:	.ascii	"You loose!\n"
 draw:	.ascii	"Tied score\n"
 stone:	.ascii	"  stone "
 scissors: .ascii "scissors"
@@ -28,9 +29,23 @@ paper:	.ascii	"  paper "
 	mov	$0,	%rdi
 	syscall
 .endm
+.macro	scan
+	xor	%rax,	%rax
+	xor	%rdi,	%rdi
+	mov	$buff,	%rsi
+	inc	%rdx
+	syscall
+.endm
 
 .globl _start
 _start:
+#	write	$wellco,$we_len
+#_running:
+	write	$prompt,$pr_len
+#	xor	%r9,	%r9
+#	xor	%rbx,	%rbx
+#обнулить все регистры
+
 	mov	$318,	%rax
 	mov	$buff,	%rdi
 	mov	$1,	%rsi
@@ -46,17 +61,12 @@ _start:
 	cmp	repr2,	%r8
 	cmovg	%rax,	%rbx
 	mov	%rbx,	flag_m
-scan:
-	xor	%rax,	%rax
-	xor	%rdi,	%rdi
-	mov	$buff,	%rsi
-	inc	%rdx
-	syscall
+	scan
 
 	mov	buff,	%r9
 	sub	$0x31,	%r9
 	mov	%r9,	flag_u
-_compare:
+_comp:
 	mov	$game,	%rdx
 	cmp	%rax,	%r9	/*rax имеет 1*/
 	je	one_u
@@ -107,7 +117,7 @@ wining:
 	write	$win,	$11
 	jmp	_exit
 losing:
-	write	$lose,	$10
+	write	$lose,	$11
 	jmp	_exit
 drawing:
 	write	$draw,	$11
